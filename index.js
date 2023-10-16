@@ -525,7 +525,7 @@ app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
   res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
 });
 
-//update one card from deceasedsInfo
+//update one card from deceasedsInfo - update
 // app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
 //   const { name, donationAmount, imgPath } = req.body;
 //   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
