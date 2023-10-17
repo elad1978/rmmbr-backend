@@ -502,57 +502,130 @@ app.delete(
   }
 );
 
-//update one card from deceasedsInfo
+
 app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
   const { name, donationAmount, imgPath } = req.body;
-  const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
+  const memoryWallId = req.params.id;
+  const deceasedId = parseInt(req.params.deceasedId);
+
+  // Find the memory wall
+  const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
   if (!memoryWallData) {
     return res.status(404).json({ error: "Memory wall not found" });
   }
+
+  // Find the deceased person
   const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
-    (d) => d.id === parseInt(req.params.deceasedId)
+    (d) => d.id === deceasedId
   );
   if (deceasedInfoIndex === -1) {
     return res.status(404).json({ error: "Deceased person not found" });
   }
-  memoryWallData.deceasedsInfo[deceasedInfoIndex] = {
-    id: parseInt(req.params.deceasedId),
-    name: name,
-    donationAmount: donationAmount,
-    imgPath: imgPath,
-  };
-  console.log(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
-  res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+
+  // Validate and update the deceased person's information
+  if (name && typeof name === "string") {
+    memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
+  }
+
+  if (imgPath && typeof imgPath === "string") {
+    memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
+  }
+
+  if (donationAmount && typeof donationAmount === "number") {
+    memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
+      donationAmount;
+  }
+
+  // Handle potential errors during the update operation
+  try {
+    // Save the updated memory wall data (assuming you have a save/update function)
+    // saveMemoryWallData(memoryWallData);
+    res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-//update one card from deceasedsInfo - update
-// app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
-//   const { name, donationAmount, imgPath } = req.body;
-//   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
-//   if (!memoryWallData) {
-//     return res.status(404).json({ error: "Memory wall not found" });
-//   }
-//   const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
-//     (d) => d.id === parseInt(req.params.deceasedId)
-//   );
-//   if (deceasedInfoIndex === -1) {
-//     return res.status(404).json({ error: "Deceased person not found" });
-//   }
-//   let updatedCard;
-//   updatedCard.id = parseInt(req.params.deceasedId);
-//   if (name != "") {
-//     updatedCard.name = name;
-//   }
-//   if (imgPath != "") {
-//     updatedCard.imgPath = imgPath;
-//   }
-//   if (donationAmount != "") {
-//     updatedCard.donationAmount = donationAmount;
-//   }
-//   memoryWallData.deceasedsInfo[deceasedInfoIndex] = updatedCard;
-//   console.log(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
-//   res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+// const multer = require("multer");
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/"); // specify the upload directory
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, uniqueSuffix + "-" + file.originalname); // create a unique file name
+//   },
 // });
+
+// const upload = multer({ storage: storage });
+
+// // PUT route for updating deceased person information with file upload
+// app.put(
+//   "/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId",
+//   upload.single("image"),
+//   (req, res) => {
+//     const { name } = req.body;
+//     const imgPath = req.body.imgPath ? req.body.imgPath : ""; // Multer will process the uploaded file, and req.file will hold the file information
+//     const donationAmount = req.body.donationAmount || ""; // Use empty string if donationAmount is not provided
+
+//     console.log("imgPath :", imgPath);
+
+//     const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
+//     if (!memoryWallData) {
+//       return res.status(404).json({ error: "Memory wall not found" });
+//     }
+
+//     const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
+//       (d) => d.id === parseInt(req.params.deceasedId)
+//     );
+//     if (deceasedInfoIndex === -1) {
+//       return res.status(404).json({ error: "Deceased person not found" });
+//     }
+
+//     let updatedCard = {};
+//     updatedCard.id = parseInt(req.params.deceasedId);
+//     if (name !== "") {
+//       updatedCard.name = name;
+//     } else {
+//       // Check if the deceasedInfo object exists before accessing its properties
+//       if (memoryWallData.deceasedsInfo[updatedCard.id]) {
+//         updatedCard.name = memoryWallData.deceasedsInfo[updatedCard.id].name;
+//       } else {
+//         // Handle the case where the object is undefined (optional)
+//         return res.status(404).json({ error: "Deceased person not found" });
+//       }
+//     }
+
+//     // Check if imgPath is empty, if not, use the uploaded imgPath, otherwise use existing imgPath
+//     if (imgPath !== "") {
+//       updatedCard.imgPath = imgPath;
+//     } else {
+//       // Check if the deceasedInfo object and its imgPath property exist before accessing them
+//       if (
+//         memoryWallData.deceasedsInfo[updatedCard.id] &&
+//         memoryWallData.deceasedsInfo[updatedCard.id].imgPath
+//       ) {
+//         updatedCard.imgPath =
+//           memoryWallData.deceasedsInfo[updatedCard.id].imgPath;
+//       } else {
+//         // Handle the case where imgPath is undefined or empty (optional)
+//         return res.status(404).json({ error: "Image path not found" });
+//       }
+//     }
+
+//     // Use donationAmount if provided, otherwise use existing donationAmount or set it to an appropriate default value
+//     updatedCard.donationAmount =
+//       donationAmount ||
+//       (memoryWallData.deceasedsInfo[updatedCard.id]
+//         ? memoryWallData.deceasedsInfo[updatedCard.id].donationAmount
+//         : "");
+
+//     memoryWallData.deceasedsInfo[deceasedInfoIndex] = updatedCard;
+//     console.log(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+//     res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+//   }
+// );
 
 //get sliderUpdates
 app.get("/api/getMemoryWallById/:id/sliderUpdates", (req, res) => {
