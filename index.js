@@ -185,7 +185,7 @@ let memoryWall = [
       {
         id: "6",
         imagePath:
-          "https://www.szmc.org.il/UploadedImages//06_2016/ShaareZedek_1.jpg",
+          "https://www.jerusalem-love.co.il/wp-content/uploads/2012/05/DSCF31461.jpg",
         text: "בית החולים שערי צדק הישן",
       },
     ],
@@ -502,6 +502,14 @@ app.delete(
   }
 );
 
+//post deceasedsInfo
+app.post("/api/getMemoryWallById/:id/deceasedsInfo", (req, res) => {
+  const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
+  const newDeceased = req.body;
+  newDeceased.id = memoryWallData.deceasedsInfo.length + 1;
+  memoryWallData.deceasedsInfo.push(newDeceased);
+  res.json(memoryWallData.deceasedsInfo);
+});
 
 app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
   const { name, donationAmount, imgPath } = req.body;
