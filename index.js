@@ -123,10 +123,11 @@ app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    console.log("sss", file);
     cb(null, "uploads/"); // Files will be saved in the 'uploads' directory
   },
   filename: (req, file, cb) => {
-    console.log(file);
+    //console.log(file);
     cb(null, file.originalname); // Use the original filename
   },
 });
@@ -165,76 +166,97 @@ const upload = multer({ storage: storage });
 //   },
 // });
 
-// POST route for file upload =========================================> for testing
-// app.post("/api/upload", upload.single("file"), (req, res) => {
-//   if (!req.file) {
-//     return res.status(400).json({ error: "No file uploaded." });
-//   }
-
-//   // File upload successful
-//   res.json({
-//     message: "File uploaded successfully",
-//     filename: req.file.filename,
-//   });
+// //post deceasedsInfo - with no file input
+// app.post("/api/getMemoryWallById/:id/deceasedsInfo", (req, res) => {
+//   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
+//   const newDeceased = req.body;
+//   newDeceased.id = memoryWallData.deceasedsInfo.length + 1;
+//   memoryWallData.deceasedsInfo.push(newDeceased);
+//   res.json(memoryWallData.deceasedsInfo);
 // });
 
-//post deceasedsInfo - with no file input
-app.post("/api/getMemoryWallById/:id/deceasedsInfo", (req, res) => {
-  const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
-  const newDeceased = req.body;
-  newDeceased.id = memoryWallData.deceasedsInfo.length + 1;
-  memoryWallData.deceasedsInfo.push(newDeceased);
-  res.json(memoryWallData.deceasedsInfo);
-});
+//POST route to handle form data and file upload for creating new card
+app.post(
+  "/api/getMemoryWallById/:id/deceasedsInfo",
+  upload.single("imgPath"),
+  (req, res) => {
+    console.log(req.body);
+    console.log(req.file);
+    try {
+      const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
 
-// //POST route to handle form data and file upload for creating new card
+      if (!memoryWallData) {
+        return res.status(404).json({ message: "Memory wall not found" });
+      }
+
+      const name = req.body.name;
+      const donationAmount = req.body.donationAmount;
+      let imgPath = req.file ? req.file.path : null;
+      console.log("name", name);
+
+      // Validate request data
+      if (!name || !donationAmount) {
+        return res
+          .status(400)
+          .json({ message: "name and donation amount are necessary" });
+      }
+      if (!imgPath) {
+        imgPath = "uploads\\pen 6.png";
+      }
+
+      const memoryWallId = memoryWallData.deceasedsInfo.length + 1;
+      const newDeceased = {
+        id: memoryWallId,
+        name: name,
+        donationAmount: donationAmount,
+        imgPath: imgPath,
+      };
+
+      // Handle the file upload and form data for creating new records
+      // Your database insertion logic here...
+      // Example: YourDatabaseModel.create(newDeceased);
+
+      memoryWallData.deceasedsInfo.push(newDeceased);
+      res.json({
+        message: "Data added successfully",
+        newDeceased: newDeceased,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
 // app.post(
 //   "/api/getMemoryWallById/:id/deceasedsInfo",
 //   upload.single("imgPath"),
 //   (req, res) => {
-//     try {
-//       const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
+//     console.log(req); // Check if req.body contains the expected data
+//     //console.log("req.body.name", req.body.name);
+//     console.log(req.file);
 
-//       if (!memoryWallData) {
-//         return res.status(404).json({ message: "Memory wall not found" });
-//       }
+//     const newId = memoryWallData.deceasedsInfo.length + 1;
+//     const name = req.body.name;
+//     const donationAmount = req.body.donationAmount;
+//     // const imgPath = req.file ? req.file.path : "default-image-path.png";
+//     const imgPath = req.file.path;
+//     console.log(req.file.path);
 
-//       const name = req.body.name;
-//       const donationAmount = req.body.donationAmount;
-//       let imgPath = req.file ? req.file.path : null;
-
-//       // Validate request data
-//       if (!name || !donationAmount) {
-//         return res
-//           .status(400)
-//           .json({ message: "name and donation amount are necessary" });
-//       }
-//       if (!imgPath) {
-//         imgPath = "uploads\\pen 6.png";
-//       }
-
-//       const memoryWallId = memoryWallData.deceasedsInfo.length + 1;
-//       const newDeceased = {
-//         id: memoryWallId,
-//         name: name,
-//         donationAmount: donationAmount,
-//         imgPath: imgPath,
-//       };
-
-//       // Handle the file upload and form data for creating new records
-//       // Your database insertion logic here...
-//       // Example: YourDatabaseModel.create(newDeceased);
-
-//       memoryWallData.deceasedsInfo.push(newDeceased);
-
-//       res.json({
-//         message: "Data added successfully",
-//         newDeceased: newDeceased,
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: "Internal server error" });
+//     // Validate name and donationAmount
+//     if (!name || !donationAmount) {
+//       return res
+//         .status(400)
+//         .json({ message: "name and donation amount are necessary" });
 //     }
+
+//     // Handle the data and file as needed (e.g., store in a database)
+//     // ...
+
+//     res.json({
+//       message: "Data added successfully",
+//       newDeceased: { name, donationAmount, imgPath },
+//     });
 //   }
 // );
 
