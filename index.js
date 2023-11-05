@@ -11,7 +11,7 @@ const { users } = require("./DB");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log("sss", file);
+    console.log("imageDetails", file);
     cb(null, "uploads/"); // Files will be saved in the 'uploads' directory
   },
   filename: (req, file, cb) => {
@@ -21,6 +21,8 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// app.use(express.static(path.join(__dirname, "uploads")));
 
 //                                                                            //memoryWall
 //get memoryWall
@@ -134,50 +136,6 @@ app.delete(
   }
 );
 
-app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
-  const { name, donationAmount, imgPath } = req.body;
-  const memoryWallId = req.params.id;
-  const deceasedId = parseInt(req.params.deceasedId);
-
-  // Find the memory wall
-  const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
-  if (!memoryWallData) {
-    return res.status(404).json({ error: "Memory wall not found" });
-  }
-
-  // Find the deceased person
-  const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
-    (d) => d.id === deceasedId
-  );
-  if (deceasedInfoIndex === -1) {
-    return res.status(404).json({ error: "Deceased person not found" });
-  }
-
-  // Validate and update the deceased person's information
-  if (name && typeof name === "string") {
-    memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
-  }
-
-  if (imgPath && typeof imgPath === "string") {
-    memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
-  }
-
-  if (donationAmount && typeof donationAmount === "number") {
-    memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
-      donationAmount;
-  }
-
-  // Handle potential errors during the update operation
-  try {
-    // Save the updated memory wall data (assuming you have a save/update function)
-    // saveMemoryWallData(memoryWallData);
-    res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 //POST route to handle form data and file upload for creating new card
 app.post(
   "/api/getMemoryWallById/:id/deceasedsInfo",
@@ -226,6 +184,153 @@ app.post(
     }
   }
 );
+
+// app.put(
+//   "/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId",
+//   upload.single("imgPath"),
+//   (req, res) => {
+//     console.log(req.body);
+//     const { name, donationAmount } = req.body;
+//     console.log(name);
+//     console.log(donationAmount);
+//     let imgPath = req.file ? req.file.path : null;
+//     console.log(imgPath);
+
+//     const memoryWallId = req.params.id;
+//     const deceasedId = parseInt(req.params.deceasedId);
+
+//     // Find the memory wall
+//     const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
+//     if (!memoryWallData) {
+//       return res.status(404).json({ error: "Memory wall not found" });
+//     }
+
+//     // Find the deceased person
+//     const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
+//       (d) => d.id === deceasedId
+//     );
+//     if (deceasedInfoIndex === -1) {
+//       return res.status(404).json({ error: "Deceased person not found" });
+//     }
+
+//     // Validate and update the deceased person's information
+//     if (name && typeof name === "string") {
+//       memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
+//     }
+
+//     if (imgPath) {
+//       memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
+//     }
+
+//     if (donationAmount && typeof donationAmount === "number") {
+//       memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
+//         donationAmount;
+//     }
+
+//     // Handle potential errors during the update operation
+//     try {
+//       // Save the updated memory wall data (assuming you have a save/update function)
+//       // saveMemoryWallData(memoryWallData);
+//       res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ error: "Internal server error" });
+//     }
+//   }
+// );
+//put deceasedsInfo
+app.put(
+  "/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId",
+  upload.single("imgPath"),
+  (req, res) => {
+    const name = req.body.name;
+    let donationAmount = req.body.donationAmount;
+    let imgPath = req.file ? req.file.path : null;
+    const memoryWallId = req.params.id;
+    const deceasedId = parseInt(req.params.deceasedId);
+
+    // Find the memory wall
+    const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
+    if (!memoryWallData) {
+      return res.status(404).json({ error: "Memory wall not found" });
+    }
+
+    // Find the deceased person
+    const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
+      (d) => d.id === deceasedId
+    );
+    if (deceasedInfoIndex === -1) {
+      return res.status(404).json({ error: "Deceased person not found" });
+    }
+
+    // Validate and update the deceased person's information
+    if (name && typeof name === "string") {
+      memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
+    }
+
+    if (imgPath) {
+      memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
+    }
+    donationAmount = parseInt(donationAmount);
+    if (donationAmount && typeof donationAmount === "number") {
+      memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
+        donationAmount;
+    }
+
+    // Handle potential errors during the update operation
+    try {
+      // Save the updated memory wall data (assuming you have a save/update function)
+      // saveMemoryWallData(memoryWallData);
+      res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+// app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
+//   const { name, donationAmount, imgPath } = req.body;
+//   const memoryWallId = req.params.id;
+//   const deceasedId = parseInt(req.params.deceasedId);
+
+//   // Find the memory wall
+//   const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
+//   if (!memoryWallData) {
+//     return res.status(404).json({ error: "Memory wall not found" });
+//   }
+
+//   // Find the deceased person
+//   const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
+//     (d) => d.id === deceasedId
+//   );
+//   if (deceasedInfoIndex === -1) {
+//     return res.status(404).json({ error: "Deceased person not found" });
+//   }
+
+//   // Validate and update the deceased person's information
+//   if (name && typeof name === "string") {
+//     memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
+//   }
+
+//   if (imgPath && typeof imgPath === "string") {
+//     memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
+//   }
+
+//   if (donationAmount && typeof donationAmount === "number") {
+//     memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
+//       donationAmount;
+//   }
+
+//   // Handle potential errors during the update operation
+//   try {
+//     // Save the updated memory wall data (assuming you have a save/update function)
+//     // saveMemoryWallData(memoryWallData);
+//     res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 //                                                                            //.sliderUpdates
 //get sliderUpdates
