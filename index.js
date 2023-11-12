@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const { memoryWall } = require("./DB");
 const { users } = require("./DB");
+const jwt = require("jsonwebtoken");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -22,9 +23,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// app.use(express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "uploads")));
 
-//                                                                            //memoryWall
+app.get("/uploads/:imageName", (req, res) => {
+  const { imageName } = req.params;
+  res.sendFile(path.join(__dirname, "uploads", imageName));
+});
+
+//                                                                                                       //memoryWall
 //get memoryWall
 app.get("/api/memoryWall", (req, res) => {
   res.json(memoryWall);
@@ -42,13 +48,31 @@ app.post("/api/memoryWall", (req, res) => {
   res.json(memoryWall);
 });
 
-//                                                                               //users
+//                                                                                                          //users
 // get users
 app.get("/api/users", (req, res) => {
   res.json(users);
 });
 
-//                                                                            //.highlightsNews
+//login
+app.post("/api/login/", (req, res) => {
+  const { email, password } = req.body;
+  let user = users.find((u) => u.email === email);
+  if (!user) {
+    res.status(400).send("email or password are missing");
+    return;
+  }
+
+  if (user.password != password) {
+    res.status(404).send("Email or password is incorrect");
+    return;
+  }
+
+  let token = jwt.sign({ email: user.email, role: user.role }, "tatatatatata");
+  res.json({ token: token, user: user, expiresIn: 86400 });
+});
+
+//                                                                                                       //.highlightsNews
 //get highlightsNews
 app.get("/api/getMemoryWallById/:id/highlightsNews", (req, res) => {
   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
@@ -72,7 +96,9 @@ app.post(
       const title = req.body.title;
       const date = req.body.date;
       const text = req.body.text;
-      const img = req.file ? req.file.path : null;
+      const img = req.file
+        ? `http://localhost:3000/uploads/${req.file.filename}`
+        : null;
 
       // Validate request data
       if (!title || !date) {
@@ -99,15 +125,7 @@ app.post(
   }
 );
 
-// //post highlightsNews
-// app.post("/api/getMemoryWallById/:id/highlightsNews", (req, res) => {
-//   const newHighlight = req.body;
-//   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
-//   memoryWallData.highlightsNews.push(newHighlight);
-//   res.json(memoryWallData.highlightsNews);
-// });
-
-//                                                                            //.deceasedsInfo
+//                                                                                                    //.deceasedsInfo
 //get deceasedsInfo
 app.get("/api/getMemoryWallById/:id/deceasedsInfo", (req, res) => {
   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
@@ -152,7 +170,10 @@ app.post(
 
       const name = req.body.name;
       const donationAmount = req.body.donationAmount;
-      let imgPath = req.file ? req.file.path : null;
+      // let imgPath = req.file ? req.file.path : null;
+      let imgPath = req.file
+        ? `http://localhost:3000/uploads/${req.file.filename}`
+        : null;
       console.log("name", name);
 
       // Validate request data
@@ -185,59 +206,6 @@ app.post(
   }
 );
 
-// app.put(
-//   "/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId",
-//   upload.single("imgPath"),
-//   (req, res) => {
-//     console.log(req.body);
-//     const { name, donationAmount } = req.body;
-//     console.log(name);
-//     console.log(donationAmount);
-//     let imgPath = req.file ? req.file.path : null;
-//     console.log(imgPath);
-
-//     const memoryWallId = req.params.id;
-//     const deceasedId = parseInt(req.params.deceasedId);
-
-//     // Find the memory wall
-//     const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
-//     if (!memoryWallData) {
-//       return res.status(404).json({ error: "Memory wall not found" });
-//     }
-
-//     // Find the deceased person
-//     const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
-//       (d) => d.id === deceasedId
-//     );
-//     if (deceasedInfoIndex === -1) {
-//       return res.status(404).json({ error: "Deceased person not found" });
-//     }
-
-//     // Validate and update the deceased person's information
-//     if (name && typeof name === "string") {
-//       memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
-//     }
-
-//     if (imgPath) {
-//       memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
-//     }
-
-//     if (donationAmount && typeof donationAmount === "number") {
-//       memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
-//         donationAmount;
-//     }
-
-//     // Handle potential errors during the update operation
-//     try {
-//       // Save the updated memory wall data (assuming you have a save/update function)
-//       // saveMemoryWallData(memoryWallData);
-//       res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ error: "Internal server error" });
-//     }
-//   }
-// );
 //put deceasedsInfo
 app.put(
   "/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId",
@@ -245,7 +213,9 @@ app.put(
   (req, res) => {
     const name = req.body.name;
     let donationAmount = req.body.donationAmount;
-    let imgPath = req.file ? req.file.path : null;
+    let imgPath = req.file
+      ? `http://localhost:3000/uploads/${req.file.filename}`
+      : null;
     const memoryWallId = req.params.id;
     const deceasedId = parseInt(req.params.deceasedId);
 
@@ -288,51 +258,8 @@ app.put(
     }
   }
 );
-// app.put("/api/getMemoryWallById/:id/deceasedsInfo/:deceasedId", (req, res) => {
-//   const { name, donationAmount, imgPath } = req.body;
-//   const memoryWallId = req.params.id;
-//   const deceasedId = parseInt(req.params.deceasedId);
 
-//   // Find the memory wall
-//   const memoryWallData = memoryWall.find((m) => m.id === memoryWallId);
-//   if (!memoryWallData) {
-//     return res.status(404).json({ error: "Memory wall not found" });
-//   }
-
-//   // Find the deceased person
-//   const deceasedInfoIndex = memoryWallData.deceasedsInfo.findIndex(
-//     (d) => d.id === deceasedId
-//   );
-//   if (deceasedInfoIndex === -1) {
-//     return res.status(404).json({ error: "Deceased person not found" });
-//   }
-
-//   // Validate and update the deceased person's information
-//   if (name && typeof name === "string") {
-//     memoryWallData.deceasedsInfo[deceasedInfoIndex].name = name;
-//   }
-
-//   if (imgPath && typeof imgPath === "string") {
-//     memoryWallData.deceasedsInfo[deceasedInfoIndex].imgPath = imgPath;
-//   }
-
-//   if (donationAmount && typeof donationAmount === "number") {
-//     memoryWallData.deceasedsInfo[deceasedInfoIndex].donationAmount =
-//       donationAmount;
-//   }
-
-//   // Handle potential errors during the update operation
-//   try {
-//     // Save the updated memory wall data (assuming you have a save/update function)
-//     // saveMemoryWallData(memoryWallData);
-//     res.json(memoryWallData.deceasedsInfo[deceasedInfoIndex]);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-//                                                                            //.sliderUpdates
+//                                                                                                             //.sliderUpdates
 //get sliderUpdates
 app.get("/api/getMemoryWallById/:id/sliderUpdates", (req, res) => {
   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
@@ -345,7 +272,7 @@ app.get("/api/users/:id", (req, res) => {
   res.json(oneUser);
 });
 
-//                                                                                  //.title
+//                                                                                                                 //.title
 //get title
 app.get("/api/getMemoryWallById/:id/title", (req, res) => {
   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
@@ -361,7 +288,7 @@ app.put("/api/getMemoryWallById/:id/title", (req, res) => {
   res.json(memoryWallData.title);
 });
 
-//                                                                            //.about
+//                                                                                                                      //.about
 //put about
 app.put("/api/getMemoryWallById/:id/about", (req, res) => {
   const memoryWallData = memoryWall.find((m) => m.id === req.params.id);
