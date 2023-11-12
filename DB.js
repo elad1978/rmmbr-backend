@@ -397,7 +397,7 @@ let users = [
     email: "a0504104451@gmail.com",
     permissions: { memoryWalls: [], meoryPages: [] },
     role: "partialAccess",
-    imgPath: "http://localhost:3000/uploads/elad-img.jpg",
+    imgPath: null,
   },
   {
     id: "3",
@@ -406,7 +406,7 @@ let users = [
     email: "a0504114914@gmail.com",
     permissions: { memoryWalls: [], meoryPages: [] },
     role: "user",
-    imgPath: "http://localhost:3000/uploads/elad-img.jpg",
+    imgPath: null,
   },
   {
     id: "4",
@@ -415,7 +415,7 @@ let users = [
     email: "efrathalav@gamil.com",
     permissions: { memoryWalls: [], meoryPages: [] },
     role: "admin",
-    imgPath: "http://localhost:3000/uploads/elad-img.jpg",
+    imgPath: null,
   },
   {
     id: "5",
@@ -424,7 +424,7 @@ let users = [
     email: "efrathalev@gmail.com",
     permissions: { memoryWalls: [1], meoryPages: [] },
     role: "partialAccess",
-    imgPath: "http://localhost:3000/uploads/elad-img.jpg",
+    imgPath: "http://localhost:3000/uploads/face4.jpg",
   },
   {
     id: "6",
@@ -433,7 +433,7 @@ let users = [
     email: "5678@gmail.com",
     permissions: { memoryWalls: [], meoryPages: [] },
     role: "user",
-    imgPath: "http://localhost:3000/uploads/elad-img.jpg",
+    imgPath: null,
   },
 ];
 

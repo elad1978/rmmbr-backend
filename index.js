@@ -55,6 +55,23 @@ app.get("/api/users", (req, res) => {
 });
 
 //login
+// app.post("/api/login/", (req, res) => {
+//   const { email, password } = req.body;
+//   let user = users.find((u) => u.email === email);
+//   if (!user) {
+//     res.status(400).send("email or password are missing");
+//     return;
+//   }
+
+//   if (user.password != password) {
+//     res.status(404).send("Email or password is incorrect");
+//     return;
+//   }
+
+//   let token = jwt.sign({ email: user.email, role: user.role }, "tatatatatata");
+//   res.json({ token: token, user: user, expiresIn: 86400 });
+// });
+
 app.post("/api/login/", (req, res) => {
   const { email, password } = req.body;
   let user = users.find((u) => u.email === email);
@@ -69,7 +86,11 @@ app.post("/api/login/", (req, res) => {
   }
 
   let token = jwt.sign({ email: user.email, role: user.role }, "tatatatatata");
-  res.json({ token: token, user: user, expiresIn: 86400 });
+  let theUser = user;
+  if (user.imgPath == null) {
+    theUser.imgPath = "http://localhost:3000/uploads/avatar.jpg";
+  }
+  res.json({ token: token, user: theUser, expiresIn: 86400 });
 });
 
 //                                                                                                       //.highlightsNews
